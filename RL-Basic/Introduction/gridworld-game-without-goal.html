@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border:1px solid #d3d3d3;
+    background-color: #f1f1f1;
+}
+</style>
+</head>
+<body onload="startGame()">
+<script>
+
+var myGamePiece;
+var myScore;
+function startGame() {
+    myGamePiece = new component(10, 10, "blue", 125, 125);
+    myGoalPiece = new component(50, 50, "green", 305, 405);
+    myObstacle_t = new component(500, 2, "red", 5, 5);
+    myObstacle_l = new component(2, 500, "red", 5, 5);
+    myObstacle_r = new component(2, 500, "red", 505, 5);
+    myObstacle_b = new component(500, 2, "red", 5, 505);
+    myObstacle_v = new component(10, 200, "red", 250, 205);
+    myObstacle_h = new component(200, 10, "red", 150, 350);
+    myScore = new component("30px", "Consolas", "black", 280, 40, "text");
+    winMSG = new component("30px", "Consolas", "green", 200, 500, "text");
+    loseMSG = new component("30px", "Consolas", "red", 200, 500, "text");
+    myGameArea.start();
+    drawBoard(10, 10);
+}
+
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = 510;
+        this.canvas.height = 510;
+        this.max_score = 0;
+        this.score = 1000;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.interval = setInterval(updateGameArea, 20);
+    },
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    },
+    stop: function(){
+        clearInterval(this.interval)
+    }
+}
+
+function component(width, height, color, x, y, type) {
+    this.type = type;
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;
+    this.x = x;
+    this.y = y;
+    this.update = function() {
+        ctx = myGameArea.context;
+        if (this.type == "text") {
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
+        } else {
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+    }
+    this.newPos = function() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+    }
+    this.crashWith = function(otherobj) {
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var crash = true;
+        if ((mybottom < othertop) ||
+               (mytop > otherbottom) ||
+               (myright < otherleft) ||
+               (myleft > otherright)) {
+           crash = false;
+        }
+        return crash;
+    }
+}
+
+function drawBoard(num_rows, num_cols){
+    context = myGameArea.context;
+
+    bw = context.canvas.width - 10;
+    cell_width = Math.floor(bw / num_rows);
+
+    bh = context.canvas.height - 10;
+    cell_height = Math.floor(bh / num_cols);
+    // Padding
+    p = 5;
+
+    for (var x = 0; x <= bw; x += cell_width) {
+        context.moveTo(0.5 + x + p, p);
+        context.lineTo(0.5 + x + p, bh + p);
+    }
+
+
+    for (x = 0; x <= bh; x += cell_height) {
+        context.moveTo(p, 0.5 + x + p);
+        context.lineTo(bw + p, 0.5 + x + p);
+    }
+
+    context.strokeStyle = "black";
+    context.stroke();
+}
+
+function updateGameArea() {
+    myGameArea.score -= 1;
+    st = myGamePiece.crashWith(myObstacle_t);
+    sr = myGamePiece.crashWith(myObstacle_r);
+    sl = myGamePiece.crashWith(myObstacle_l);
+    sb = myGamePiece.crashWith(myObstacle_b);
+    sv = myGamePiece.crashWith(myObstacle_v);
+    sh = myGamePiece.crashWith(myObstacle_h);
+    if (st || sr || sl || sb || sv || sh) {
+        loseMSG.text = "YOU Lose!";
+        loseMSG.update();
+        myGameArea.stop();
+    } else {
+        myGameArea.clear();
+        //myGoalPiece.update()
+        myObstacle_t.update();
+        myObstacle_b.update();
+        myObstacle_l.update();
+        myObstacle_r.update();
+        myObstacle_v.update();
+        myObstacle_h.update();
+        myGamePiece.newPos();
+        myGamePiece.update();
+        myScore.text="SCORE: " + myGameArea.score;
+        myScore.update()
+        drawBoard(10, 10);
+    }
+    if (myGameArea.score == myGameArea.max_score){
+        loseMSG.text = "YOU Lose!";
+        loseMSG.update();
+        myGameArea.stop();
+    }
+
+    if (myGamePiece.crashWith(myGoalPiece)){
+        winMSG.text = "YOU WIN!";
+        winMSG.update();
+        myGameArea.stop();
+    }
+
+}
+
+function moveup() {
+    myGamePiece.speedY -= 1;
+    myGamePiece.speedX -= .2
+
+}
+
+function movedown() {
+    myGamePiece.speedY += 1;
+    myGamePiece.speedX -= .2
+}
+
+function moveleft() {
+    myGamePiece.speedX -= 1;
+    myGamePiece.speedY -= .2
+}
+
+function moveright() {
+    myGamePiece.speedX += 1;
+    myGamePiece.speedY -= .2
+}
+</script>
+<div style="text-align:center;width:480px;">
+  <button onclick="moveup()">UP</button><br><br>
+  <button onclick="moveleft()">LEFT</button>
+  <button onclick="moveright()">RIGHT</button><br><br>
+  <button onclick="movedown()">DOWN</button>
+</div>
+
+<p>If you click a button the red square will start moving. Click the same button many times, and it will move faster and faster.</p>
+<p>Everytime you are moving horizontally you get a wind throwing you upwards.</p>
+<p>Everytime you are moving vertically you get a wind throwing you to the left.</p>
+<p>Whenever the countdown reaches 0, you loose.</p>
+<p>Hitting the outside walls or red obstacles would cause you to loose</p>
+<p>Everytime you are moving horizontally you get a wind throwing you upwards.</p>
+
+</body>
+</html>
