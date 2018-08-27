@@ -16,7 +16,7 @@ var myGamePiece;
 var myScore;
 function startGame() {
     myGamePiece = new component(10, 10, "blue", 125, 125);
-    myGoalPiece = new component(50, 50, "green", 305, 405);
+    myGoalPiece = new component(50, 50, "green", 255, 355);
     myObstacle_t = new component(500, 2, "red", 5, 5);
     myObstacle_l = new component(2, 500, "red", 5, 5);
     myObstacle_r = new component(2, 500, "red", 505, 5);
@@ -35,8 +35,8 @@ var myGameArea = {
     start : function() {
         this.canvas.width = 510;
         this.canvas.height = 510;
-        this.max_score = 0;
-        this.score = 1000;
+        this.max_score = -1000;
+        this.score = 0;
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.interval = setInterval(updateGameArea, 20);
@@ -193,6 +193,7 @@ function moveright() {
 <p>Whenever the countdown reaches 0, you loose.</p>
 <p>Hitting the outside walls or red obstacles would cause you to loose</p>
 <p>Everytime you are moving horizontally you get a wind throwing you upwards.</p>
+<p>You win when you reach the green cell</p>
 
 </body>
 </html>

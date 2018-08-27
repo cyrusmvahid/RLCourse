@@ -35,8 +35,8 @@ var myGameArea = {
     start : function() {
         this.canvas.width = 510;
         this.canvas.height = 510;
-        this.max_score = 0;
-        this.score = 1000;
+        this.max_score = -1000;
+        this.score = 0;
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.interval = setInterval(updateGameArea, 20);
@@ -190,9 +190,10 @@ function moveright() {
 <p>If you click a button the red square will start moving. Click the same button many times, and it will move faster and faster.</p>
 <p>Everytime you are moving horizontally you get a wind throwing you upwards.</p>
 <p>Everytime you are moving vertically you get a wind throwing you to the left.</p>
-<p>Whenever the countdown reaches 0, you loose.</p>
+<p>Whenever the countdown reaches -1000, you loose.</p>
 <p>Hitting the outside walls or red obstacles would cause you to loose</p>
 <p>Everytime you are moving horizontally you get a wind throwing you upwards.</p>
+<p>You win when you reach the hidden skil cell cell</p>
 
 </body>
 </html>
