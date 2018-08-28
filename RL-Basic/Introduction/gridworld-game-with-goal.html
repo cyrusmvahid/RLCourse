@@ -14,6 +14,9 @@ canvas {
 
 var myGamePiece;
 var myScore;
+var wind_x = .2;
+var wind_y = .2;
+
 function startGame() {
     myGamePiece = new component(10, 10, "blue", 125, 125);
     myGoalPiece = new component(50, 50, "green", 255, 355);
@@ -24,7 +27,7 @@ function startGame() {
     myObstacle_v = new component(10, 200, "red", 250, 205);
     myObstacle_h = new component(200, 10, "red", 150, 350);
     myScore = new component("30px", "Consolas", "black", 280, 40, "text");
-    winMSG = new component("30px", "Consolas", "green", 200, 500, "text");
+    winMSG = new component("30px", "Consolas", "green", 55, 500, "text");
     loseMSG = new component("30px", "Consolas", "red", 200, 500, "text");
     myGameArea.start();
     drawBoard(10, 10);
@@ -152,7 +155,8 @@ function updateGameArea() {
     }
 
     if (myGamePiece.crashWith(myGoalPiece)){
-        winMSG.text = "YOU WIN!";
+        myGameArea.score += 1000;
+        winMSG.text = "YOU WIN! FINAL SCORE: " + myGameArea.score;
         winMSG.update();
         myGameArea.stop();
     }
@@ -161,23 +165,23 @@ function updateGameArea() {
 
 function moveup() {
     myGamePiece.speedY -= 1;
-    myGamePiece.speedX -= .2
+    myGamePiece.speedX -= wind_x;
 
 }
 
 function movedown() {
     myGamePiece.speedY += 1;
-    myGamePiece.speedX -= .2
+    myGamePiece.speedX -= wind_x;
 }
 
 function moveleft() {
     myGamePiece.speedX -= 1;
-    myGamePiece.speedY -= .2
+    myGamePiece.speedY -= wind_y;
 }
 
 function moveright() {
     myGamePiece.speedX += 1;
-    myGamePiece.speedY -= .2
+    myGamePiece.speedY -= wind_y;
 }
 </script>
 <div style="text-align:center;width:480px;">
@@ -192,8 +196,7 @@ function moveright() {
 <p>Everytime you are moving vertically you get a wind throwing you to the left.</p>
 <p>Whenever the countdown reaches 0, you loose.</p>
 <p>Hitting the outside walls or red obstacles would cause you to loose</p>
-<p>Everytime you are moving horizontally you get a wind throwing you upwards.</p>
-<p>You win when you reach the green cell</p>
+<p>You win when you reach the green cell and get 1000 bonous points</p>
 
 </body>
 </html>
