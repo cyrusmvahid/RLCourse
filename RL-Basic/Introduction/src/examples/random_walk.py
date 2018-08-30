@@ -27,6 +27,7 @@ class RandomWalk:
             self.transition_matrix = transition_matrix
     def move(self):
         trajectory = []
+        actions=[]
         current_pos = self.start_point
         while current_pos != self.target:
             legal_moves = np.nonzero(self.transition_matrix[current_pos])
@@ -36,7 +37,17 @@ class RandomWalk:
             rightP = self.transition_matrix[current_pos][right] * self.penalty
             current_pos = np.random.choice([left, right], 1, [leftP, rightP])[0]
             trajectory.append(current_pos)
-        return trajectory
+
+        for step in trajectory:
+            si = trajectory.index(step)
+            next_move = '-'
+            next_step = (trajectory[si + 1] if (step < 9) else 9)
+            if next_step > step:
+                next_move = '->'
+            elif next_step < step:
+                next_move = '<-'
+            actions.append(next_move)
+        return trajectory, actions
 
 
 
@@ -50,8 +61,58 @@ class VisualizeRandomWalk:
         self. master = tk.Tk()
         self.cell_width = (width-2*pad)//rw.string_length
         self.cell_height = height - 10
-        self.canvas = self._make_canvas()
         self.sleep = .1
+        self.canvas = self._make_canvas()
+
+    def _make_canvas(self):
+        pad = self.pad
+        height = self.height
+        width = self.width
+        cell_width = self.cell_width
+        canvas = tk.Canvas(master=self.master, height=height+50, width=width)
+        canvas.pack()
+        canvas.create_line(pad, pad, width-pad, pad)
+        canvas.create_line(pad, height-pad, width-pad,height-pad)
+        for x in range(pad, width+cell_width-pad, cell_width):
+            canvas.create_line(x, pad, x, height-pad)
+        canvas.bind('<Double-1>', self._onCanvasClick)
+        return canvas
+
+    def _onCanvasClick(self, event):
+        self.sleep = (1 if self.sleep==.1 else .1)
+
+
+    def _calc_ccordinate(self, pos):
+        pad = self.pad
+        cell_width = self.cell_width
+        cell_height = self.cell_height
+        top_left = [pos * cell_width + pad + pad, pad + pad]
+        buttom_right = [(1 + pos) * cell_width - pad - pad, cell_height]
+        return [top_left, buttom_right]
+
+    def run(self):
+        rw = self.rw
+        steps, actions = rw.move()
+        print("trajectory: ".format(steps) )
+        oval = self.canvas.create_oval(self._calc_ccordinate(rw.start_point), fill='blue')
+        msg = self.canvas.create_text(250, 75, text="current positoin: {}\npolicy: {}".format(rw.start_point, rw.transition_matrix[rw.start_point]))
+        for step in steps:
+            self.canvas.delete(oval)
+            self.canvas.delete(msg)
+            oval = self.canvas.create_oval(self._calc_ccordinate(step), fill='blue')
+            msg = self.canvas.create_text(250, 75, text="current positoin: {}\npolicy: {}\nnext_move: {}".format(step,
+                                                                                                                 rw.transition_matrix[step],
+                                                                                                                 actions[step]))
+            time.sleep(self.sleep)
+            self.canvas.update()
+        time.sleep(5)
+        self.master.destroy()
+
+
+
+class VisualizeRandomeWalkSTDL(VisualizeRandomWalk):
+    def __init__(self, rw, height=55, width=510, pad=5):
+        super().__init__(rw, height, width, pad)
 
     def _make_canvas(self):
         pad = self.pad
@@ -76,46 +137,6 @@ class VisualizeRandomWalk:
     def _pause(self):
         time.sleep(5)
 
-    def _calc_ccordinate(self, pos):
-        pad = self.pad
-        #height = self.height
-        #width = self.width
-        cell_width = self.cell_width
-        cell_height = self.cell_height
-        top_left = [pos * cell_width + pad + pad, pad + pad]
-        buttom_right = [(1 + pos) * cell_width - pad - pad, cell_height]
-        return [top_left, buttom_right]
-
-    def _onCanvasClick(self, event):
-        self.sleep = (1 if self.sleep==.1 else .1)
-
-    def run(self):
-        steps = rw.move()
-        oval = self.canvas.create_oval(self._calc_ccordinate(rw.start_point), fill='blue')
-        msg = self.canvas.create_text(250, 75, text="current positoin: {}\npolicy: {}".format(rw.start_point, rw.transition_matrix[rw.start_point]))
-        for step in steps:
-            self.canvas.delete(oval)
-            self.canvas.delete(msg)
-
-            si = steps.index(step)
-            next_step = (steps[si+1] if (step < 9) else 9)
-            next_move = '-'
-            if next_step > step:
-                next_move = '->'
-            elif next_step < step:
-                next_move = '<-'
-            oval = self.canvas.create_oval(self._calc_ccordinate(step), fill='blue')
-            msg = self.canvas.create_text(250, 75, text="current positoin: {}\npolicy: {}\nnext_move: {}".format(step,
-                                                                                                                 rw.transition_matrix[step],
-                                                                                                                 next_move))
-            time.sleep(self.sleep)
-            self.canvas.update()
 
 
 
-
-
-if __name__ == "__main__":
-    rw = RandomWalk()
-    vr = VisualizeRandomWalk(rw=rw)
-    tk.mainloop()
